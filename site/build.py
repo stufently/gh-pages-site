@@ -52,6 +52,15 @@ def sections(text):
     return {k: "\n".join(v).strip() for k, v in out.items()}
 
 
+def inside(rel):
+    """Repo-relative path that must stay inside the repo (no absolute, .., symlink escape)."""
+    p = pathlib.PurePosixPath(rel)
+    real = (ROOT / p).resolve()
+    if p.is_absolute() or not real.is_relative_to(ROOT.resolve()):
+        sys.exit(f"path outside the repository in site.toml: {rel}")
+    return p.as_posix()
+
+
 def first_para(text, limit=155):
     for block in text.split("\n\n"):
         b = block.strip()
@@ -74,15 +83,19 @@ def main(out):
     site = dict(cfg=cfg, ui=ui, lang=lang, base=base, gh=gh, name=cfg["name"], branch=branch,
                 version=git("describe", "--tags", "--abbrev=0") or cfg.get("version", ""))
 
-    readme = cfg.get("readme", "README.md")
+    readme = inside(cfg.get("readme", "README.md"))
     srcs = {readme: "docs/"}
-    extra = list(cfg.get("pages", []))
+    extra = [inside(p) for p in cfg.get("pages", [])]
     ddir = cfg.get("docs_dir", "docs")
-    if ddir and (ROOT / ddir).is_dir():
-        extra += sorted(str(p.relative_to(ROOT)) for p in (ROOT / ddir).glob("*.md"))
+    if ddir and (ROOT / inside(ddir)).is_dir():
+        extra += sorted(inside(p.relative_to(ROOT).as_posix()) for p in (ROOT / ddir).glob("*.md"))
     for p in extra:
         pp = pathlib.PurePosixPath(p)
         slug = pp.parent.name if pp.name.lower() == "readme.md" else pp.stem.lower()
+        if f"docs/{slug}/" in srcs.values():
+            slug = str(pp.with_suffix("")).lower().replace("/", "-")
+        if f"docs/{slug}/" in srcs.values() or slug in ("", "assets"):
+            sys.exit(f"page slug collision for {p}")
         srcs[p] = f"docs/{slug}/"
 
     def resolver(src, depth, landing=False):
@@ -95,7 +108,8 @@ def main(out):
                 return f"{prefix}docs/{url}" if landing else url
             path, _, anchor = url.partition("#")
             frag = f"#{anchor}" if anchor else ""
-            target = os.path.normpath(os.path.join(os.path.dirname(src), path)).replace("\\", "/")
+            base_dir = "" if path.startswith("/") else os.path.dirname(src)
+            target = os.path.normpath(os.path.join(base_dir, path.lstrip("/"))).replace("\\", "/")
             if target.startswith(".."):
                 return gh
             for cand in (target, f"{target}/README.md", f"{target}/readme.md"):
@@ -114,7 +128,7 @@ def main(out):
     if EXTRA_CSS.is_file():
         css += "\n/* .github/site/extra.css */\n" + EXTRA_CSS.read_text(encoding="utf-8")
     (out / "assets/site.css").write_text(css, encoding="utf-8")
-    og = cfg.get("og_image", "")
+    og = inside(cfg["og_image"]) if cfg.get("og_image") else ""
     if og and (ROOT / og).is_file():
         shutil.copy(ROOT / og, out / f"assets/og{pathlib.Path(og).suffix}")
         site["og"] = f"{base}assets/og{pathlib.Path(og).suffix}"

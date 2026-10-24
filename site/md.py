@@ -23,7 +23,8 @@ def slugify(text):
 
 def plain(md_inline):
     t = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", md_inline)
-    return re.sub(r"[`*_~]", "", t).strip()
+    t = re.sub(r"(?<!\w)_+|_+(?!\w)", "", t)
+    return re.sub(r"[`*~]", "", t).strip()
 
 
 class Renderer:

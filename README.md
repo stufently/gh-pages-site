@@ -55,7 +55,7 @@ invalid JSON-LD, a wrong canonical URL or unbalanced HTML.
    gh api -X POST repos/<owner>/<repo>/pages -f build_type=workflow
    ```
 
-The caller workflow builds on every pull request that touches the README, docs or site
+The caller workflow builds on every pull request that touches any markdown file or the site
 config, and deploys from the default branch. It never creates tags or releases.
 
 ## Calling the workflow by hand

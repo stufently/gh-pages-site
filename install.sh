@@ -12,7 +12,7 @@ cd "$dst"
 git rev-parse --show-toplevel >/dev/null
 
 slug="$(git remote get-url origin | sed -E 's#(\.git)?$##; s#.*[:/]([^/]+/[^/]+)$#\1#')"
-branch="$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')"
+branch="$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##' || true)"
 [ -n "$branch" ] || branch="$(gh repo view "$slug" --json defaultBranchRef -q .defaultBranchRef.name)"
 
 other="$(grep -lE 'deploy-pages|upload-pages-artifact|gh-pages' .github/workflows/*.y*ml 2>/dev/null \

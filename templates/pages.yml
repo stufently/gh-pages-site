@@ -1,0 +1,40 @@
+# Landing + docs site on GitHub Pages: https://github.com/stufently/gh-pages-site
+# Content comes from README.md, docs/*.md and .github/site/site.toml.
+# Builds on PRs as a check, deploys from the default branch. No releases or tags.
+name: Pages
+
+on:
+  push:
+    branches: [__BRANCH__]
+    paths:
+      - "README.md"
+      - "**/README.md"
+      - "docs/**"
+      - ".github/site/**"
+      - ".github/workflows/pages.yml"
+  pull_request:
+    branches: [__BRANCH__]
+    paths:
+      - "README.md"
+      - "**/README.md"
+      - "docs/**"
+      - ".github/site/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  site:
+    uses: stufently/gh-pages-site/.github/workflows/pages.yml@__SHA__ # __TAG__
+    with:
+      generator_ref: __SHA__
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

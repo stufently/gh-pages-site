@@ -1,0 +1,16 @@
+# Smoke-test config: builds this repo's own README (used by ci.yml).
+repository = "stufently/gh-pages-site"
+name = "gh-pages-site"
+title = "gh-pages-site — README to GitHub Pages landing and docs"
+headline = "Turn a README into a landing + docs site on GitHub Pages"
+description = "Reusable GitHub Actions workflow: README and docs to a Pages site with llms.txt, sitemap, robots and schema.org JSON-LD. Python stdlib only."
+lang = "en"
+keywords = ["github pages", "readme", "llms.txt", "github actions"]
+programming_language = "Python"
+landing_sections = ["Install into a repo"]
+docs_dir = ""
+features = ["Landing page and docs pages from README.md and docs/*.md."]
+
+[[faq]]
+q = "Does it need any dependencies?"
+a = "No. The generator uses only the Python standard library."

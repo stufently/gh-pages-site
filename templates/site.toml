@@ -1,0 +1,31 @@
+# Site config for .github/site/build.py. Everything else comes from README.md.
+name = "Tool Name"                       # brand in header, schema.org name
+title = "Tool Name — what it does in a few words"   # <title> of the home page, <= 60 chars
+headline = "What it does, in one line"   # H1 of the home page
+description = "One or two sentences, <= 160 chars: what, for whom, how to install."
+lang = "en"                              # "en" or "ru" — language of README and UI strings
+keywords = ["mcp", "cli"]
+license = "MIT"
+license_url = "https://opensource.org/license/mit"
+category = "DeveloperApplication"        # schema.org applicationCategory
+os = "Linux, macOS, Windows"
+programming_language = "Go"
+eyebrow = "Open source · MIT"
+# og_image = "docs/assets/social-preview.png"   # repo path; default: GitHub's repo card
+# download_url = "https://www.npmjs.com/package/x"   # default: <repo>/releases
+# same_as = ["https://www.npmjs.com/package/x"]     # registry pages for schema.org sameAs
+
+# README "## <name>" sections shown on the home page, in this order (exact titles).
+landing_sections = ["Install"]
+
+# Extra markdown pages besides README; top-level docs/*.md are added automatically.
+pages = []
+# docs_dir = ""                          # set "" to skip docs/*.md
+
+features = [
+  "Short statement of one capability, taken from the README.",
+]
+
+[[faq]]
+q = "A question a user would type into a search engine?"
+a = "A plain-text answer based only on facts from the README."

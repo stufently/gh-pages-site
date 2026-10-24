@@ -11,7 +11,10 @@ HEAD = re.compile(r"^(#{1,6})\s+(.*?)\s*#*\s*$")
 HR = re.compile(r"^\s{0,3}([-*_])(\s*\1){2,}\s*$")
 ITEM = re.compile(r"^(\s*)([-*+]|\d{1,9}[.)])\s+(.*)$")
 TSEP = re.compile(r"^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$")
-HTMLBLK = re.compile(r"^\s*</?[a-zA-Z][\w-]*[\s>/]|^\s*<!--")
+HTMLBLK = re.compile(r"^\s*</?[a-zA-Z][\w-]*(?:[\s>/]|$)|^\s*<!--")
+HTMLTAG = re.compile(r"<[a-zA-Z][\w-]*(?:\s[^<>]*)?>")
+HTMLATTR = re.compile(r"""(?<=\s)(src|href)(\s*=\s*)("[^"]*"|'[^']*'|[^\s"'=<>`]+)""", re.I)
+URISCHEME = re.compile(r"^[a-zA-Z][\w+.-]*:")
 INLINE_TAGS = ("br", "kbd", "sup", "sub", "b", "i", "em", "strong", "code")
 
 
@@ -79,6 +82,22 @@ class Renderer:
         ext = ' rel="noopener"' if href.startswith("http") else ""
         return f'<a href="{href}"{ext}>{text}</a>'
 
+    def _html_urls(self, block):
+        """Resolve relative src/href in raw HTML tags by the same rules as markdown.
+
+        Only attributes inside real tags are touched (escaped text such as
+        `&lt;a href=...&gt;` in a code sample stays as is); a tag may span lines.
+        """
+        def attr(m):
+            raw = m[3]
+            q = raw[0] if raw[0] in "\"'" else ""
+            val = html.unescape(raw[1:-1] if q else raw).strip()
+            if not val or URISCHEME.match(val):
+                return m[0]
+            q = q or '"'
+            return f"{m[1]}{m[2]}{q}{html.escape(self.resolve(val), True)}{q}"
+        return HTMLTAG.sub(lambda t: HTMLATTR.sub(attr, t[0]), block)
+
     # ---------- blocks ----------
     def render(self, text):
         lines = text.replace("\t", "    ").replace("\r\n", "\n").split("\n")
@@ -128,9 +147,11 @@ class Renderer:
                 i = self._list(lines, i, out)
                 continue
             if HTMLBLK.match(line):
+                block = []
                 while i < n and lines[i].strip():
-                    out.append(lines[i])
+                    block.append(lines[i])
                     i += 1
+                out.append(self._html_urls("\n".join(block)))
                 continue
             para = []
             while i < n and lines[i].strip() and not self._starts_block(lines, i):

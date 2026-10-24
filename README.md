@@ -19,8 +19,10 @@ The generator is plain Python standard library — no pip install, no Node, no t
   `llms-full.txt`.
 
 Relative links in the markdown are rewritten: to a site page when the target is rendered,
-otherwise to the file on GitHub. The build fails on a broken internal link or anchor,
-invalid JSON-LD, a wrong canonical URL or unbalanced HTML.
+otherwise to the file on GitHub. Since v1.0.1 the same applies to `src`/`href` in raw HTML
+blocks (`<img src="docs/x.png" width="…">`): images go to `raw.githubusercontent.com`,
+absolute URLs, `data:`/`mailto:` and other schemes stay as written. The build fails on a
+broken internal link or anchor, invalid JSON-LD, a wrong canonical URL or unbalanced HTML.
 
 ## Install into a repo
 
@@ -63,7 +65,7 @@ config, and deploys from the default branch. It never creates tags or releases.
 ```yaml
 jobs:
   site:
-    uses: stufently/gh-pages-site/.github/workflows/pages.yml@<commit-sha> # v1.0.0
+    uses: stufently/gh-pages-site/.github/workflows/pages.yml@<commit-sha> # v1.0.1
     with:
       generator_ref: <commit-sha>   # same ref as in uses:
     permissions:
@@ -74,6 +76,11 @@ jobs:
 
 Inputs: `generator_ref` (ref of this repo to build with), `python_version` (default
 `3.15`), `deploy` (default `true`; pull requests never deploy).
+
+## Releases
+
+- v1.0.1 — relative `src`/`href` in raw HTML blocks resolve like markdown links.
+- v1.0.0 — first release.
 
 ## License
 

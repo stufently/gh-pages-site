@@ -24,3 +24,5 @@ jobs:
         env:
           SITE_CONFIG: tests/site.toml
         run: python3 site/build.py _site
+      - name: Generator tests
+        run: python3 -m unittest discover -s tests -v

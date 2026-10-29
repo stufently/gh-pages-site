@@ -8,9 +8,9 @@ on:
   workflow_call:
     inputs:
       generator_ref:
-        description: Ref of stufently/gh-pages-site to build with (keep equal to the uses@ ref)
+        description: Deprecated, ignored. The generator is checked out at the called workflow's own commit.
         type: string
-        default: v1.0.0
+        default: ""
       python_version:
         type: string
         default: "3.15"
@@ -31,10 +31,27 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      # The generator comes from this workflow's own commit, so bumping the
+      # uses@ pin (e.g. by dependabot) also bumps the generator.
+      - name: Resolve generator commit
+        env:
+          WORKFLOW_REPO: ${{ job.workflow_repository }}
+          WORKFLOW_SHA: ${{ job.workflow_sha }}
+          GENERATOR_REF: ${{ inputs.generator_ref }}
+        run: |
+          if [ -z "$WORKFLOW_REPO" ] || [ -z "$WORKFLOW_SHA" ]; then
+            echo "::error::job.workflow_repository/job.workflow_sha is empty; refusing to build with the generator's default branch"
+            exit 1
+          fi
+          echo "generator: $WORKFLOW_REPO@$WORKFLOW_SHA"
+          if [ -n "$GENERATOR_REF" ] && [ "$GENERATOR_REF" != "$WORKFLOW_SHA" ]; then
+            echo "::warning::input generator_ref ($GENERATOR_REF) is deprecated and ignored; building with $WORKFLOW_SHA. Remove it from the caller."
+          fi
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: stufently/gh-pages-site
-          ref: ${{ inputs.generator_ref }}
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
           path: .gh-pages-site
           persist-credentials: false
 

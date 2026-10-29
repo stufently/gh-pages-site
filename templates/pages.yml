@@ -29,8 +29,6 @@ concurrency:
 jobs:
   site:
     uses: stufently/gh-pages-site/.github/workflows/pages.yml@__SHA__ # __TAG__
-    with:
-      generator_ref: __SHA__
     permissions:
       contents: read
       pages: write

@@ -65,20 +65,23 @@ config, and deploys from the default branch. It never creates tags or releases.
 ```yaml
 jobs:
   site:
-    uses: stufently/gh-pages-site/.github/workflows/pages.yml@<commit-sha> # v1.0.1
-    with:
-      generator_ref: <commit-sha>   # same ref as in uses:
+    uses: stufently/gh-pages-site/.github/workflows/pages.yml@<commit-sha> # v1.1.0
     permissions:
       contents: read
       pages: write
       id-token: write
 ```
 
-Inputs: `generator_ref` (ref of this repo to build with), `python_version` (default
-`3.15`), `deploy` (default `true`; pull requests never deploy).
+Inputs: `python_version` (default `3.15`), `deploy` (default `true`; pull requests never
+deploy). The generator is checked out at the called workflow's own commit
+(`job.workflow_sha`), so the `uses:` pin is the only version to bump. `generator_ref` is
+deprecated and ignored (a warning is printed if it differs); it stays declared so older
+callers keep working.
 
 ## Releases
 
+- v1.1.0 — the generator is checked out at the called workflow's own commit; `generator_ref`
+  is deprecated and ignored, so a dependabot bump of `uses:` updates the generator too.
 - v1.0.1 — relative `src`/`href` in raw HTML blocks resolve like markdown links.
 - v1.0.0 — first release.
 
